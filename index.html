@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acompanhamento de recebimentos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================================
+   PARA ATUALIZAR OS DADOS, role at\u00e9 o bloco DADOS mais abaixo no <script>.
+   Tudo na tela e recalculado a partir dele.
+   ========================================================================= */
+:root{
+  --ink:#12161C; --paper:#F1F4F8; --card:#FFFFFF; --muted:#69727E; --line:#E9ECF1;
+  --pos:#178F5B; --pos-soft:#EAF6F0; --neg:#C4443F; --neg-soft:#FCEFEE;
+  --hero:#1B2436; --hero-2:#232F46; --hero-muted:#94A0B3; --hero-line:#2E3A52;
+  --pos-hi:#4ECB94; --neg-hi:#F0918D;
+  --shadow:0 1px 2px rgba(18,22,28,.03), 0 6px 18px rgba(18,22,28,.045);
+  --shadow-hover:0 4px 16px rgba(18,22,28,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Inter",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased; line-height:1.45;
+  padding:20px 16px 56px;
+}
+.wrap{max-width:920px;margin:0 auto}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* header */
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:4px 2px 18px}
+.eyebrow{font-family:"Space Grotesk";font-weight:600;font-size:12px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.period{font-size:12px;color:var(--muted);font-weight:500}
+
+/* hero */
+.hero{
+  background:linear-gradient(160deg,var(--hero),var(--hero-2));
+  border-radius:20px;padding:26px 24px 24px;color:#fff;
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.hero-label{font-size:12.5px;color:var(--hero-muted);font-weight:500;margin:0 0 7px;letter-spacing:.01em}
+.hero-value{font-family:"Space Grotesk";font-weight:600;font-size:clamp(32px,8vw,46px);line-height:1;letter-spacing:-.02em;margin:0}
+.hero-meaning{margin:12px 0 0;font-size:14px;color:#E7ECF4;font-weight:500}
+.hero-meaning b{font-weight:700}
+.hero-chart{margin-top:22px;border-top:1px solid var(--hero-line);padding-top:18px}
+.hero-chart-note{font-size:12px;color:var(--hero-muted);font-weight:500;margin:0 0 14px}
+
+/* kpi strip */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 15px;
+  cursor:pointer;font:inherit;color:inherit;text-align:left;width:100%;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.kpi .k-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.kpi .k-lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;line-height:1.2}
+.kpi .k-chev{color:#C3CAD3;font-size:15px;line-height:1}
+.kpi .k-val{font-family:"Space Grotesk";font-weight:600;font-size:21px;letter-spacing:-.01em}
+.kpi .k-hint{font-size:11px;color:var(--muted);margin-top:5px}
+@media (hover:hover) and (pointer:fine){
+  .kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);border-color:#D9DEE6}
+}
+.kpi:focus-visible{outline:2px solid var(--hero);outline-offset:2px}
+.kpi:active{transform:translateY(0);box-shadow:none}
+
+/* section */
+.section{margin-top:26px}
+.s-head{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 12px}
+.s-title{font-family:"Space Grotesk";font-weight:600;font-size:15px}
+.s-note{font-size:12px;color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+
+/* composicao bars */
+.comp-row{display:grid;grid-template-columns:84px 1fr 112px;align-items:center;gap:14px;padding:12px 0}
+.comp-row + .comp-row{border-top:1px solid var(--line)}
+.comp-name{font-size:13px;font-weight:600;color:var(--ink)}
+.comp-track{height:8px;background:#EEF1F5;border-radius:5px;overflow:hidden}
+.comp-fill{height:100%;border-radius:5px}
+.comp-val{text-align:right;line-height:1.25}
+.comp-val .amt{font-size:13px;font-weight:600;display:block;white-space:nowrap}
+.comp-val .pct{color:var(--muted);font-size:11px;display:block;margin-top:1px;font-weight:500}
+
+/* saldo chart */
+.chart-wrap{width:100%;max-width:480px;margin:0 auto;overflow:visible}
+
+/* month cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;
+  cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;
+  text-align:left;font:inherit;color:inherit;width:100%;
+}
+@media (hover:hover) and (pointer:fine){
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);border-color:#D9DEE6}
+}
+.card:focus-visible{outline:2px solid var(--hero);outline-offset:2px}
+.card:active{transform:translateY(0);box-shadow:none}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.card-month{font-family:"Space Grotesk";font-weight:600;font-size:15px}
+.chip{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:999px;letter-spacing:.01em;white-space:nowrap}
+.chip.neg{background:var(--neg-soft);color:var(--neg)}
+.chip.pos{background:var(--pos-soft);color:var(--pos)}
+.chip.zero{background:#EEF1F5;color:var(--muted)}
+.card-saldo{font-family:"Space Grotesk";font-weight:600;font-size:22px;letter-spacing:-.02em;line-height:1}
+.card-sub{display:flex;justify-content:space-between;margin-top:12px;font-size:11.5px;color:var(--muted)}
+.card-sub .mono{color:var(--ink);font-weight:500}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(18,22,28,.45);backdrop-filter:blur(3px);
+  display:none;align-items:flex-end;justify-content:center;z-index:50;padding:0}
+.overlay.open{display:flex}
+.sheet{
+  background:var(--card);width:100%;max-width:560px;border-radius:20px 20px 0 0;
+  max-height:88vh;overflow-y:auto;padding:22px 20px 30px;
+  animation:rise .22s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes rise{from{transform:translateY(20px);opacity:.4}to{transform:translateY(0);opacity:1}}
+@media(min-width:640px){
+  .overlay{align-items:center;padding:24px}
+  .sheet{border-radius:20px;max-height:82vh;padding:26px 26px 30px;box-shadow:0 20px 60px rgba(18,22,28,.22)}
+  @keyframes rise{from{transform:translateY(10px) scale(.98);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+}
+.sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px}
+.sheet-title{font-family:"Space Grotesk";font-weight:600;font-size:19px}
+.x{border:none;background:#EEF1F5;color:var(--ink);width:40px;height:40px;border-radius:50%;
+  font-size:19px;cursor:pointer;flex:none;line-height:1;display:flex;align-items:center;justify-content:center}
+.x:active{background:#E2E7EE}
+@media (hover:hover) and (pointer:fine){.x:hover{background:#E2E7EE}}
+.sheet-saldo{font-family:"Space Grotesk";font-weight:600;font-size:27px;letter-spacing:-.02em;margin:10px 0 2px}
+.sheet-meaning{font-size:13px;color:var(--muted);margin-bottom:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.mini{background:#F7F9FB;border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.mini .m-lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.mini .m-val{font-family:"Space Grotesk";font-weight:600;font-size:16px;margin-top:3px}
+.list-h{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 2px 8px}
+.grp-h{display:flex;justify-content:space-between;align-items:baseline;margin:20px 2px 6px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+.grp-h .g-name{font-family:"Space Grotesk";font-weight:600;font-size:14px;color:var(--ink)}
+.grp-h .g-sub{font-size:12px;color:var(--muted)}
+.grp-h .g-sub .mono{color:var(--ink);font-weight:600}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row .r-name{font-size:14px;font-weight:500}
+.row .r-day{font-size:11px;color:var(--muted);font-weight:600;margin-right:9px;display:inline-block;min-width:34px}
+.row .r-val{font-size:14px;font-weight:600}
+.total-row{display:flex;justify-content:space-between;padding:12px 2px 2px;margin-top:4px;border-top:1px solid var(--ink)}
+.total-row span:first-child{font-weight:600;font-size:13px}
+.total-row .mono{font-weight:600;font-size:14px}
+.foot{text-align:center;font-size:11.5px;color:var(--muted);margin-top:30px;line-height:1.6}
+.pos{color:var(--pos)} .neg{color:var(--neg)}
+
+@media(max-width:560px){
+  .kpis{grid-template-columns:1fr 1fr}
+  .comp-row{grid-template-columns:66px 1fr 96px;gap:10px}
+  .panel{padding:16px 14px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="eyebrow">Recebimentos</span>
+    <span class="period" id="period"></span>
+  </div>
+
+  <div class="hero">
+    <p class="hero-label">Saldo acumulado</p>
+    <h1 class="hero-value mono" id="heroValue"></h1>
+    <div class="hero-chart">
+      <p class="hero-chart-note">Saldo por mês &middot; verde = pagaram a mais, vermelho = falta receber</p>
+      <div class="chart-wrap" id="chart"></div>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="section">
+    <div class="s-head"><span class="s-title">Composição do devido</span><span class="s-note" id="compTotal"></span></div>
+    <div class="panel" id="comp"></div>
+  </div>
+
+  <div class="section">
+    <div class="s-head"><span class="s-title">Meses</span><span class="s-note">toque para abrir o detalhe</span></div>
+    <div class="cards" id="cards"></div>
+  </div>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+</div>
+
+<script>
+/* =========================================================================
+   DADOS  -  unico lugar para editar
+   -------------------------------------------------------------------------
+   . SALARIO_MENSAL: valor fixo devido de salario todo mes.
+   . Cada objeto em MESES e um mes. Para adicionar um mes novo, copie um
+     bloco e ajuste "ref", "nome" e as listas.
+   . recebidos : cada pix ou deposito que entrou  -> {dia, de, valor}
+   . comissoes : comissoes devidas no mes. Duas formas:
+        - valor pronto        -> {dia, de, valor}
+        - a partir do pedido  -> {dia, de, faturamento}   (1% do valor TOTAL da NF)
+        "de" e sempre a razao social do cliente.
+        Regra: comissao = 1% do valor total da NF (produto + frete, o que ela cobrir).
+        Ex.: NF de R$ 100,00 -> comissao de R$ 1,00.
+   . reembolsos: reembolsos devidos no mes         -> {dia, de, valor}
+   . salario   : opcional. So preencha se o mes fugir do fixo; senao usa o fixo.
+   Nao precisa somar nada. O painel calcula tudo sozinho.
+   ========================================================================= */
+const SALARIO_MENSAL = 8125;
+const COMISSAO_PCT   = 0.01;   // 1% sobre o faturamento do pedido
+const ATUALIZADO_EM  = "15/07/2026";
+
+const MESES = [
+  {
+    ref:"2026-03", nome:"Mar\u00e7o",
+    recebidos:[
+      {dia:12, de:"sidnei disposti", valor:276.00},
+      {dia:12, de:"telo calcados e artigos", valor:555.00},
+      {dia:13, de:"sebastiao franco barbosa", valor:1172.40},
+      {dia:16, de:"amorelle vestuario", valor:3735.99},
+      {dia:16, de:"boy forever ltda", valor:418.00},
+      {dia:25, de:"boy forever ltda", valor:731.50},
+      {dia:29, de:"Lucas", valor:1236.10},
+    ],
+    comissoes:[ {dia:30, de:"GALP\u00c3O DROP", valor:434.38} ],
+    reembolsos:[],
+  },
+  {
+    ref:"2026-04", nome:"Abril",
+    recebidos:[
+      {dia:9,  de:"diego e silva", valor:252.00},
+      {dia:10, de:"Bellas artes industria", valor:100.00},
+      {dia:10, de:"Pedro silas marques", valor:187.82},
+      {dia:13, de:"Dalmeida industria", valor:473.78},
+      {dia:13, de:"paulo roberto", valor:859.80},
+      {dia:13, de:"paulo roberto", valor:140.00},
+      {dia:13, de:"sebastiao franco barbosa", valor:1404.00},
+      {dia:13, de:"Flavia trabalon", valor:402.50},
+      {dia:14, de:"sidnei disposti", valor:494.00},
+      {dia:15, de:"Marco antonio gomes", valor:2250.00},
+      {dia:15, de:"Willian antonio da silva", valor:357.00},
+      {dia:15, de:"paulo roberto", valor:490.00},
+      {dia:17, de:"Otavio finati", valor:798.00},
+    ],
+    comissoes:[
+      {dia:30, de:"GALP\u00c3O DROP", valor:309.52},
+      {dia:30, de:"GATTO KARINO", valor:25.28},
+    ],
+    reembolsos:[],
+  },
+  {
+    ref:"2026-05", nome:"Maio",
+    recebidos:[
+      {dia:14, de:"A2 Center", valor:1257.60},
+      {dia:14, de:"Nazira Husni", valor:2750.00},
+      {dia:18, de:"sidnei disposti", valor:138.00},
+      {dia:22, de:"Kallys", valor:1593.40},
+      {dia:26, de:"Valen Colli", valor:1932.00},
+    ],
+    comissoes:[ {dia:30, de:"GALP\u00c3O DROP", valor:440.72} ],
+    reembolsos:[ {dia:30, de:"Reembolso", valor:435.84} ],
+  },
+  {
+    ref:"2026-06", nome:"Junho",
+    recebidos:[
+      {dia:3,  de:"Dep\u00f3sito", valor:371.00},
+      {dia:11, de:"paulo roberto", valor:2000.00},
+      {dia:15, de:"Rodrigo Boni", valor:315.30},
+      {dia:16, de:"Jean Frank", valor:200.00},
+      {dia:16, de:"Babeto Industria", valor:1545.00},
+      {dia:17, de:"telo calcados e artigos", valor:1200.00},
+      {dia:18, de:"j barbosa comercio", valor:1590.00},
+      {dia:18, de:"Costume industria", valor:1200.00},
+    ],
+    comissoes:[ {dia:30, de:"GALP\u00c3O DROP", valor:571.48} ],
+    reembolsos:[ {dia:30, de:"Reembolso", valor:209.99} ],
+  },
+  {
+    ref:"2026-07", nome:"Julho",
+    recebidos:[
+      {dia:3,  de:"Dep\u00f3sito", valor:1218.60},
+      {dia:6,  de:"Juliano aparecido", valor:7124.22},
+      {dia:7,  de:"Dep\u00f3sito", valor:646.00},
+      {dia:15, de:"Antonio Carlos Alves", valor:177.60},
+      {dia:15, de:"Franciele Saraiva Soares", valor:872.00},
+    ],
+    comissoes:[ {dia:14, de:"BioSul", valor:102.081} ],
+    reembolsos:[],
+  },
+];
+
+/* =========================  MOTOR  (nao precisa mexer)  ================== */
+const BRL = new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"});
+const money = v => BRL.format(v);
+const sum = arr => arr.reduce((a,b)=>a+b.valor,0);
+// comissao: usa "valor" se veio pronto, senao 1% do "faturamento" do pedido
+const comValor = x => (x.valor!=null) ? x.valor : (x.faturamento||0)*COMISSAO_PCT;
+const sumCom = arr => arr.reduce((a,b)=>a+comValor(b),0);
+
+const data = MESES.map(m=>{
+  const recebido = sum(m.recebidos||[]);
+  const comissao = sumCom(m.comissoes||[]);
+  const reembolso = sum(m.reembolsos||[]);
+  const salario = (m.salario!=null)?m.salario:SALARIO_MENSAL;
+  const devido = salario + comissao + reembolso;
+  return {...m, recebido, comissao, reembolso, salario, devido, saldo: recebido-devido};
+});
+
+const T = {
+  recebido: data.reduce((a,m)=>a+m.recebido,0),
+  devido:   data.reduce((a,m)=>a+m.devido,0),
+  salario:  data.reduce((a,m)=>a+m.salario,0),
+  comissao: data.reduce((a,m)=>a+m.comissao,0),
+  reembolso:data.reduce((a,m)=>a+m.reembolso,0),
+};
+T.saldo = T.recebido - T.devido;
+T.pctPago = T.devido ? (T.recebido/T.devido*100) : 0;
+T.mediaMes = data.length ? T.recebido/data.length : 0;
+
+const cls = v => v>0.005?"pos":(v<-0.005?"neg":"zero");
+const abr = n => n.slice(0,3);
+
+/* period */
+document.getElementById("period").textContent =
+  data.length ? `${abr(data[0].nome)} a ${abr(data[data.length-1].nome)} 2026` : "";
+
+/* hero */
+document.getElementById("heroValue").textContent = money(T.saldo);
+document.getElementById("heroValue").style.color =
+  T.saldo>0.005?"var(--pos-hi)":(T.saldo<-0.005?"var(--neg-hi)":"#fff");
+
+/* usado tambem pelo grafico de saldo abaixo */
+const maxAbs = Math.max(...data.map(m=>Math.abs(m.saldo)),1);
+
+/* kpis (clicaveis) */
+const kpiDefs = [
+  {tipo:"recebido", lbl:"Total recebido", val:money(T.recebido), hint:"ver todos os recebimentos"},
+  {tipo:"devido",   lbl:"Total devido",   val:money(T.devido),   hint:"ver tudo que \u00e9 devido"},
+];
+document.getElementById("kpis").innerHTML = kpiDefs.map(k=>
+  `<button class="kpi" data-tipo="${k.tipo}" aria-label="${k.lbl}, ${k.hint}">
+     <div class="k-top"><span class="k-lbl">${k.lbl}</span><span class="k-chev">&rsaquo;</span></div>
+     <div class="k-val mono">${k.val}</div>
+     <div class="k-hint">${k.hint}</div>
+   </button>`).join("");
+document.querySelectorAll(".kpi").forEach(b=>b.onclick=()=>openList(b.dataset.tipo));
+
+/* composicao */
+document.getElementById("compTotal").textContent = "Total devido " + money(T.devido);
+const compData = [
+  ["Sal\u00e1rio", T.salario, "#25324B"],
+  ["Comiss\u00e3o", T.comissao, "#2F8FBF"],
+  ["Reembolso", T.reembolso, "#7B61A8"],
+];
+document.getElementById("comp").innerHTML = compData.map(([n,v,c])=>{
+  const pct = T.devido? v/T.devido*100 : 0;
+  return `<div class="comp-row">
+    <span class="comp-name">${n}</span>
+    <div class="comp-track"><div class="comp-fill" style="width:${pct}%;background:${c}"></div></div>
+    <span class="comp-val mono"><span class="amt">${money(v)}</span><span class="pct">${pct.toFixed(1).replace(".",",")}%</span></span>
+  </div>`;
+}).join("");
+
+/* saldo chart (SVG diverging bars around zero) */
+(function(){
+  const W=Math.max(320, data.length*96), H=210, padX=14, padTop=24, padBot=30;
+  const zoneH=H-padTop-padBot, mid=padTop+zoneH/2;
+  const bw=Math.min(46,(W-padX*2)/data.length*0.5);
+  const step=(W-padX*2)/data.length;
+  const scale=v=> (v/maxAbs)*(zoneH/2);
+  let bars="";
+  data.forEach((m,i)=>{
+    const cx=padX+step*i+step/2;
+    const val=scale(m.saldo);
+    const up=m.saldo>=0;
+    const y=up?mid-val:mid;
+    const h=Math.max(2,Math.abs(val));
+    const color=up?"var(--pos-hi)":"var(--neg-hi)";
+    bars+=`<rect x="${cx-bw/2}" y="${y}" width="${bw}" height="${h}" rx="4" fill="${color}"/>`;
+    const lblY=up?y-7:y+h+15;
+    bars+=`<text x="${cx}" y="${lblY}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" font-weight="600" fill="${color}">${money(m.saldo).replace("R$\u00a0","").replace("R$","")}</text>`;
+    bars+=`<text x="${cx}" y="${H-9}" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-size="11" font-weight="600" fill="var(--hero-muted)">${abr(m.nome)}</text>`;
+  });
+  document.getElementById("chart").innerHTML=
+    `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Saldo por m\u00eas">
+       <line x1="${padX}" y1="${mid}" x2="${W-padX}" y2="${mid}" stroke="var(--hero-line)" stroke-width="1.5"/>
+       ${bars}
+     </svg>`;
+})();
+
+/* month cards */
+document.getElementById("cards").innerHTML = data.map((m,i)=>{
+  const c=cls(m.saldo);
+  const chipTxt = m.saldo<-0.005?"Falta receber":(m.saldo>0.005?"Pago a mais":"Quitado");
+  return `<button class="card" data-i="${i}" aria-label="Detalhe de ${m.nome}">
+    <div class="card-top">
+      <span class="card-month">${m.nome}</span>
+      <span class="chip ${c}">${chipTxt}</span>
+    </div>
+    <div class="card-saldo mono ${c}">${money(m.saldo)}</div>
+    <div class="card-sub">
+      <span>Recebido <span class="mono">${money(m.recebido)}</span></span>
+      <span>Devido <span class="mono">${money(m.devido)}</span></span>
+    </div>
+  </button>`;
+}).join("");
+
+/* modal */
+const overlay=document.getElementById("overlay"), sheet=document.getElementById("sheet");
+function openMonth(i){
+  const m=data[i], c=cls(m.saldo);
+  const meaning = m.saldo<-0.005?`Ainda falta te pagarem ${money(-m.saldo)} neste m\u00eas.`
+    :(m.saldo>0.005?`Pagaram ${money(m.saldo)} a mais neste m\u00eas.`:`M\u00eas quitado.`);
+  const recebidos=[...m.recebidos].sort((a,b)=>a.dia-b.dia);
+  const devidos=[
+    {de:"Sal\u00e1rio (fixo)", valor:m.salario},
+    ...m.comissoes.map(x=>({
+      de:"Comiss\u00e3o \u00b7 "+x.de, valor:comValor(x),
+      hint: x.faturamento!=null ? `1% de ${money(x.faturamento)}` : null
+    })),
+    ...m.reembolsos.map(x=>({de:"Reembolso \u00b7 "+x.de, valor:x.valor})),
+  ];
+  sheet.innerHTML=`
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-title">${m.nome} 2026</div>
+      </div>
+      <button class="x" id="closeX" aria-label="Fechar">&times;</button>
+    </div>
+    <div class="sheet-saldo mono ${c}">${money(m.saldo)}</div>
+    <div class="sheet-meaning">${meaning}</div>
+    <div class="grid2">
+      <div class="mini"><div class="m-lbl">Recebido</div><div class="m-val mono">${money(m.recebido)}</div></div>
+      <div class="mini"><div class="m-lbl">Devido</div><div class="m-val mono">${money(m.devido)}</div></div>
+      <div class="mini"><div class="m-lbl">Comiss\u00e3o</div><div class="m-val mono">${money(m.comissao)}</div></div>
+      <div class="mini"><div class="m-lbl">Reembolso</div><div class="m-val mono">${money(m.reembolso)}</div></div>
+    </div>
+    <div class="list-h">Dep\u00f3sitos recebidos (${recebidos.length})</div>
+    ${recebidos.map(r=>`<div class="row">
+        <span class="r-name"><span class="r-day mono">${String(r.dia).padStart(2,"0")}/${m.ref.slice(5,7)}</span>${r.de}</span>
+        <span class="r-val mono pos">${money(r.valor)}</span>
+      </div>`).join("")}
+    <div class="total-row"><span>Total recebido</span><span class="mono">${money(m.recebido)}</span></div>
+    <div class="list-h">A receber lan\u00e7ado no m\u00eas</div>
+    ${devidos.map(d=>`<div class="row">
+        <span class="r-name">${d.de}${d.hint?`<span class="r-day mono" style="margin-left:0;display:block;margin-top:2px">${d.hint}</span>`:""}</span>
+        <span class="r-val mono">${money(d.valor)}</span>
+      </div>`).join("")}
+    <div class="total-row"><span>Total devido</span><span class="mono">${money(m.devido)}</span></div>
+  `;
+  overlay.classList.add("open");
+  document.body.style.overflow="hidden";
+  document.getElementById("closeX").onclick=closeSheet;
+}
+function grpHeader(nome, sub){
+  return `<div class="grp-h"><span class="g-name">${nome}</span>
+    <span class="g-sub">total <span class="mono">${money(sub)}</span></span></div>`;
+}
+function lineRow(name, valor, extraCls, hint){
+  return `<div class="row">
+    <span class="r-name">${name}${hint?`<span class="r-day mono" style="margin-left:0;display:block;margin-top:2px">${hint}</span>`:""}</span>
+    <span class="r-val mono ${extraCls||""}">${money(valor)}</span></div>`;
+}
+function openList(tipo){
+  let title, total, body="";
+  if(tipo==="recebido"){
+    title="Todos os recebimentos"; total=T.recebido;
+    data.forEach(m=>{
+      const recs=[...(m.recebidos||[])].sort((a,b)=>a.dia-b.dia);
+      if(!recs.length) return;
+      body+=grpHeader(m.nome, m.recebido);
+      recs.forEach(r=> body+=lineRow(
+        `<span class="r-day mono">${String(r.dia).padStart(2,"0")}/${m.ref.slice(5,7)}</span>${r.de}`,
+        r.valor, "pos"));
+    });
+  }else{
+    title="Tudo que \u00e9 devido"; total=T.devido;
+    data.forEach(m=>{
+      body+=grpHeader(m.nome, m.devido);
+      body+=lineRow("Sal\u00e1rio (fixo)", m.salario);
+      m.comissoes.forEach(x=> body+=lineRow(
+        "Comiss\u00e3o \u00b7 "+x.de, comValor(x), "",
+        x.faturamento!=null ? `1% de ${money(x.faturamento)}` : null));
+      m.reembolsos.forEach(x=> body+=lineRow("Reembolso \u00b7 "+x.de, x.valor));
+    });
+  }
+  sheet.innerHTML=`
+    <div class="sheet-head">
+      <div class="sheet-title">${title}</div>
+      <button class="x" id="closeX" aria-label="Fechar">&times;</button>
+    </div>
+    <div class="sheet-saldo mono">${money(total)}</div>
+    <div class="sheet-meaning">${data.length} meses</div>
+    ${body}
+    <div class="total-row"><span>Total geral</span><span class="mono">${money(total)}</span></div>
+  `;
+  overlay.classList.add("open");
+  document.body.style.overflow="hidden";
+  document.getElementById("closeX").onclick=closeSheet;
+}
+function closeSheet(){overlay.classList.remove("open");document.body.style.overflow="";}
+document.querySelectorAll(".card").forEach(b=>b.onclick=()=>openMonth(+b.dataset.i));
+overlay.addEventListener("click",e=>{if(e.target===overlay)closeSheet();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();});
+
+/* foot */
+document.getElementById("foot").innerHTML =
+  `Saldo = recebido menos devido (sal\u00e1rio, comiss\u00e3o e reembolso).<br>`+
+  `Negativo em vermelho, ainda falta receber. Positivo em verde, pagaram a mais. Atualizado em ${ATUALIZADO_EM}.`;
+</script>
+</body>
+</html>
