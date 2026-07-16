@@ -103,8 +103,10 @@ body{
 .chip.pos{background:var(--pos-soft);color:var(--pos)}
 .chip.zero{background:#EEF1F5;color:var(--muted)}
 .card-saldo{font-family:"Space Grotesk";font-weight:600;font-size:22px;letter-spacing:-.02em;line-height:1}
-.card-sub{display:flex;justify-content:space-between;margin-top:12px;font-size:11.5px;color:var(--muted)}
-.card-sub .mono{color:var(--ink);font-weight:500}
+.card-sub{display:flex;flex-direction:column;gap:7px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.card-sub .sub-item{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.card-sub .sub-lbl{font-size:10.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.card-sub .sub-val{font-size:11px;color:var(--ink);font-weight:600;white-space:nowrap}
 
 /* modal */
 .overlay{position:fixed;inset:0;background:rgba(18,22,28,.45);backdrop-filter:blur(3px);
@@ -134,16 +136,19 @@ body{
 .mini .m-lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .mini .m-val{font-family:"Space Grotesk";font-weight:600;font-size:16px;margin-top:3px}
 .list-h{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 2px 8px}
-.grp-h{display:flex;justify-content:space-between;align-items:baseline;margin:20px 2px 6px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+.grp-list{display:flex;flex-direction:column;gap:10px}
+.grp-block{background:#F7F9FB;border:1px solid var(--line);border-radius:14px;padding:2px 14px 6px}
+.grp-h{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 2px;padding-bottom:9px;border-bottom:1px solid #DEE3EA}
 .grp-h .g-name{font-family:"Space Grotesk";font-weight:600;font-size:14px;color:var(--ink)}
 .grp-h .g-sub{font-size:12px;color:var(--muted)}
 .grp-h .g-sub .mono{color:var(--ink);font-weight:600}
+.grp-block .row{padding:11px 0}
 .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line)}
 .row:last-child{border-bottom:none}
 .row .r-name{font-size:14px;font-weight:500}
 .row .r-day{font-size:11px;color:var(--muted);font-weight:600;margin-right:9px;display:inline-block;min-width:34px}
 .row .r-val{font-size:14px;font-weight:600}
-.total-row{display:flex;justify-content:space-between;padding:12px 2px 2px;margin-top:4px;border-top:1px solid var(--ink)}
+.total-row{display:flex;justify-content:space-between;padding:14px 2px 2px;margin-top:6px;border-top:1px solid var(--ink)}
 .total-row span:first-child{font-weight:600;font-size:13px}
 .total-row .mono{font-weight:600;font-size:14px}
 .foot{text-align:center;font-size:11.5px;color:var(--muted);margin-top:30px;line-height:1.6}
@@ -402,8 +407,8 @@ document.getElementById("cards").innerHTML = data.map((m,i)=>{
     </div>
     <div class="card-saldo mono ${c}">${money(m.saldo)}</div>
     <div class="card-sub">
-      <span>Recebido <span class="mono">${money(m.recebido)}</span></span>
-      <span>Devido <span class="mono">${money(m.devido)}</span></span>
+      <span class="sub-item"><span class="sub-lbl">Recebido</span><span class="sub-val mono">${money(m.recebido)}</span></span>
+      <span class="sub-item"><span class="sub-lbl">Devido</span><span class="sub-val mono">${money(m.devido)}</span></span>
     </div>
   </button>`;
 }).join("");
@@ -455,9 +460,12 @@ function openMonth(i){
   document.body.style.overflow="hidden";
   document.getElementById("closeX").onclick=closeSheet;
 }
-function grpHeader(nome, sub){
-  return `<div class="grp-h"><span class="g-name">${nome}</span>
-    <span class="g-sub">total <span class="mono">${money(sub)}</span></span></div>`;
+function grpBlock(nome, sub, rowsHtml){
+  return `<div class="grp-block">
+    <div class="grp-h"><span class="g-name">${nome}</span>
+      <span class="g-sub">total <span class="mono">${money(sub)}</span></span></div>
+    ${rowsHtml}
+  </div>`;
 }
 function lineRow(name, valor, extraCls, hint){
   return `<div class="row">
@@ -465,27 +473,28 @@ function lineRow(name, valor, extraCls, hint){
     <span class="r-val mono ${extraCls||""}">${money(valor)}</span></div>`;
 }
 function openList(tipo){
-  let title, total, body="";
+  let title, total, blocks=[];
   const dataDesc=[...data].reverse();
   if(tipo==="recebido"){
     title="Todos os recebimentos"; total=T.recebido;
     dataDesc.forEach(m=>{
       const recs=[...(m.recebidos||[])].sort((a,b)=>b.dia-a.dia);
       if(!recs.length) return;
-      body+=grpHeader(m.nome, m.recebido);
-      recs.forEach(r=> body+=lineRow(
+      let rows="";
+      recs.forEach(r=> rows+=lineRow(
         `<span class="r-day mono">${String(r.dia).padStart(2,"0")}/${m.ref.slice(5,7)}</span>${r.de}`,
         r.valor, "pos"));
+      blocks.push(grpBlock(m.nome, m.recebido, rows));
     });
   }else{
     title="Tudo que \u00e9 devido"; total=T.devido;
     dataDesc.forEach(m=>{
-      body+=grpHeader(m.nome, m.devido);
-      body+=lineRow("Sal\u00e1rio (fixo)", m.salario);
-      m.comissoes.forEach(x=> body+=lineRow(
+      let rows=lineRow("Sal\u00e1rio (fixo)", m.salario);
+      m.comissoes.forEach(x=> rows+=lineRow(
         "Comiss\u00e3o \u00b7 "+x.de, comValor(x), "",
         x.faturamento!=null ? `1% de ${money(x.faturamento)}` : null));
-      m.reembolsos.forEach(x=> body+=lineRow("Reembolso \u00b7 "+x.de, x.valor));
+      m.reembolsos.forEach(x=> rows+=lineRow("Reembolso \u00b7 "+x.de, x.valor));
+      blocks.push(grpBlock(m.nome, m.devido, rows));
     });
   }
   sheet.innerHTML=`
@@ -495,7 +504,7 @@ function openList(tipo){
     </div>
     <div class="sheet-saldo mono">${money(total)}</div>
     <div class="sheet-meaning">${data.length} meses</div>
-    ${body}
+    <div class="grp-list">${blocks.join("")}</div>
     <div class="total-row"><span>Total geral</span><span class="mono">${money(total)}</span></div>
   `;
   overlay.classList.add("open");
