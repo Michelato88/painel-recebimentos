@@ -96,12 +96,7 @@ body{
 }
 .card:focus-visible{outline:2px solid var(--hero);outline-offset:2px}
 .card:active{transform:translateY(0);box-shadow:none}
-.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
-.card-month{font-family:"Space Grotesk";font-weight:600;font-size:15px}
-.chip{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:999px;letter-spacing:.01em;white-space:nowrap}
-.chip.neg{background:var(--neg-soft);color:var(--neg)}
-.chip.pos{background:var(--pos-soft);color:var(--pos)}
-.chip.zero{background:#EEF1F5;color:var(--muted)}
+.card-month{font-family:"Space Grotesk";font-weight:600;font-size:15px;margin-bottom:10px}
 .card-saldo{font-family:"Space Grotesk";font-weight:600;font-size:22px;letter-spacing:-.02em;line-height:1}
 .card-sub{display:flex;flex-direction:column;gap:7px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 .card-sub .sub-item{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
@@ -399,12 +394,8 @@ document.getElementById("comp").innerHTML = compData.map(([n,v,c])=>{
 /* month cards */
 document.getElementById("cards").innerHTML = data.map((m,i)=>{
   const c=cls(m.saldo);
-  const chipTxt = m.saldo<-0.005?"Falta receber":(m.saldo>0.005?"Pago a mais":"Quitado");
   return `<button class="card" data-i="${i}" aria-label="Detalhe de ${m.nome}">
-    <div class="card-top">
-      <span class="card-month">${m.nome}</span>
-      <span class="chip ${c}">${chipTxt}</span>
-    </div>
+    <div class="card-month">${m.nome}</div>
     <div class="card-saldo mono ${c}">${money(m.saldo)}</div>
     <div class="card-sub">
       <span class="sub-item"><span class="sub-lbl">Recebido</span><span class="sub-val mono">${money(m.recebido)}</span></span>
