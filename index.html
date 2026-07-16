@@ -414,7 +414,7 @@ function openMonth(i){
   const m=data[i], c=cls(m.saldo);
   const meaning = m.saldo<-0.005?`Ainda falta te pagarem ${money(-m.saldo)} neste m\u00eas.`
     :(m.saldo>0.005?`Pagaram ${money(m.saldo)} a mais neste m\u00eas.`:`M\u00eas quitado.`);
-  const recebidos=[...m.recebidos].sort((a,b)=>a.dia-b.dia);
+  const recebidos=[...m.recebidos].sort((a,b)=>b.dia-a.dia);
   const devidos=[
     {de:"Sal\u00e1rio (fixo)", valor:m.salario},
     ...m.comissoes.map(x=>({
@@ -466,10 +466,11 @@ function lineRow(name, valor, extraCls, hint){
 }
 function openList(tipo){
   let title, total, body="";
+  const dataDesc=[...data].reverse();
   if(tipo==="recebido"){
     title="Todos os recebimentos"; total=T.recebido;
-    data.forEach(m=>{
-      const recs=[...(m.recebidos||[])].sort((a,b)=>a.dia-b.dia);
+    dataDesc.forEach(m=>{
+      const recs=[...(m.recebidos||[])].sort((a,b)=>b.dia-a.dia);
       if(!recs.length) return;
       body+=grpHeader(m.nome, m.recebido);
       recs.forEach(r=> body+=lineRow(
@@ -478,7 +479,7 @@ function openList(tipo){
     });
   }else{
     title="Tudo que \u00e9 devido"; total=T.devido;
-    data.forEach(m=>{
+    dataDesc.forEach(m=>{
       body+=grpHeader(m.nome, m.devido);
       body+=lineRow("Sal\u00e1rio (fixo)", m.salario);
       m.comissoes.forEach(x=> body+=lineRow(
