@@ -351,7 +351,7 @@ document.querySelectorAll(".kpi").forEach(b=>b.onclick=()=>openList(b.dataset.ti
 /* composicao */
 document.getElementById("compTotal").textContent = "Total devido " + money(T.devido);
 const compData = [
-  ["Sal\u00e1rio", T.salario, "#25324B"],
+  ["Mensal", T.salario, "#25324B"],
   ["Comiss\u00e3o", T.comissao, "#2F8FBF"],
   ["Reembolso", T.reembolso, "#7B61A8"],
 ];
@@ -412,7 +412,7 @@ function openMonth(i){
     :(m.saldo>0.005?`Pagaram ${money(m.saldo)} a mais neste m\u00eas.`:`M\u00eas quitado.`);
   const recebidos=[...m.recebidos].sort((a,b)=>b.dia-a.dia);
   const devidos=[
-    {de:"Sal\u00e1rio (fixo)", valor:m.salario},
+    {de:"Mensal (fixo)", valor:m.salario},
     ...m.comissoes.map(x=>({
       de:"Comiss\u00e3o \u00b7 "+x.de, valor:comValor(x),
       hint: x.faturamento!=null ? `1% de ${money(x.faturamento)}` : null
@@ -480,7 +480,7 @@ function openList(tipo){
   }else{
     title="Tudo que \u00e9 devido"; total=T.devido;
     dataDesc.forEach(m=>{
-      let rows=lineRow("Sal\u00e1rio (fixo)", m.salario);
+      let rows=lineRow("Mensal (fixo)", m.salario);
       m.comissoes.forEach(x=> rows+=lineRow(
         "Comiss\u00e3o \u00b7 "+x.de, comValor(x), "",
         x.faturamento!=null ? `1% de ${money(x.faturamento)}` : null));
