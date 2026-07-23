@@ -155,9 +155,62 @@ body{
   .panel{padding:16px 14px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ================= ABAS (Recebimentos / Galp\u00e3o Drop) ================= */
+.tabbar{max-width:920px;margin:0 auto;display:flex;gap:18px;padding:18px 16px 0}
+.tab-btn{background:none;border:none;font:inherit;font-family:"Space Grotesk";font-weight:600;font-size:13px;
+  color:var(--muted);padding:0 0 10px;cursor:pointer;border-bottom:2px solid transparent;
+  transition:color .15s ease,border-color .15s ease}
+.tab-btn.active{color:var(--ink);border-bottom-color:var(--ink)}
+@media (hover:hover) and (pointer:fine){.tab-btn:not(.active):hover{color:var(--ink)}}
+.tab-page{display:none}
+.tab-page.active{display:block}
+
+/* ================= Página 2: Galpão Drop — tudo isolado sob #tab-galpao ================= */
+#tab-galpao, #tab-galpao *{box-sizing:border-box}
+#tab-galpao{font-family:'Segoe UI',sans-serif;background:#F4F3F0;color:#111;padding:24px;margin:-20px -16px -56px}
+#tab-galpao h1{font-size:22px;font-weight:700;margin-bottom:4px}
+#tab-galpao .gd-subtitle{font-size:13px;color:#555;margin-bottom:28px}
+#tab-galpao .gd-kpi-principal{background:#111;color:#fff;border-radius:12px;padding:24px 28px;margin-bottom:16px}
+#tab-galpao .gd-kpi-principal .gd-label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;opacity:.6;margin-bottom:8px}
+#tab-galpao .gd-kpi-principal .gd-value{font-size:38px;font-weight:700;line-height:1}
+#tab-galpao .gd-kpi-principal .gd-sub{font-size:12px;opacity:.55;margin-top:6px}
+#tab-galpao .gd-kpi-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+#tab-galpao .gd-kpi{background:#fff;border-radius:12px;padding:18px 20px;flex:1;min-width:160px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-top:3px solid #111}
+#tab-galpao .gd-kpi.gd-accent{border-top-color:#666}
+#tab-galpao .gd-kpi.gd-light{border-top-color:#bbb}
+#tab-galpao .gd-kpi .gd-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#888;margin-bottom:6px}
+#tab-galpao .gd-kpi .gd-value{font-size:22px;font-weight:700;color:#111;line-height:1.1}
+#tab-galpao .gd-kpi .gd-sub{font-size:11px;color:#aaa;margin-top:5px}
+#tab-galpao .gd-section{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+#tab-galpao .gd-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#999;margin-bottom:16px}
+#tab-galpao table{width:100%;border-collapse:collapse;font-size:13px}
+#tab-galpao th{text-align:left;padding:7px 10px;background:#f4f3f0;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#999}
+#tab-galpao th.gd-r{text-align:right}
+#tab-galpao td{padding:7px 10px;border-bottom:1px solid #f4f3f0;white-space:nowrap}
+#tab-galpao tr:last-child td{border-bottom:none}
+#tab-galpao tr:hover td{background:#fafaf8}
+#tab-galpao .gd-val{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+#tab-galpao .gd-tag{display:inline-block;background:#111;color:#fff;font-size:9px;padding:2px 6px;border-radius:20px;font-weight:700;letter-spacing:.04em;vertical-align:middle;margin-left:4px}
+#tab-galpao .gd-highlight td{background:#f0faf4}
+#tab-galpao .gd-dim{color:#ccc}
+#tab-galpao .gd-chart-outer{overflow-x:auto}
+#tab-galpao .gd-bars{display:flex;align-items:flex-end;gap:5px;height:160px;min-width:560px}
+#tab-galpao .gd-bar-col{display:flex;flex-direction:column;align-items:center;flex:1}
+#tab-galpao .gd-bar{width:100%;border-radius:4px 4px 0 0;min-height:3px;position:relative;cursor:default}
+#tab-galpao .gd-bar:hover{opacity:.75}
+#tab-galpao .gd-bar-label{font-size:9px;color:#aaa;text-align:center;margin-top:5px;white-space:nowrap}
+#tab-galpao .gd-tooltip{position:absolute;top:-32px;left:50%;transform:translateX(-50%);background:#111;color:#fff;font-size:10px;padding:3px 8px;border-radius:4px;white-space:nowrap;display:none;z-index:10}
+#tab-galpao .gd-bar:hover .gd-tooltip{display:block}
 </style>
 </head>
 <body>
+<div class="tabbar">
+  <button class="tab-btn active" id="tabBtnReceb" type="button">Recebimentos</button>
+  <button class="tab-btn" id="tabBtnGalpao" type="button">Galpão Drop</button>
+</div>
+
+<div id="tab-receb" class="tab-page active">
 <div class="wrap">
   <div class="top">
     <span class="eyebrow">Recebimentos</span>
@@ -190,6 +243,61 @@ body{
 <div class="overlay" id="overlay">
   <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
 </div>
+</div>
+<!-- fim #tab-receb -->
+
+<div id="tab-galpao" class="tab-page">
+<h1>Controlador Financeiro — Galpão Drop</h1>
+<p class="gd-subtitle">54 comprovantes processados &bull; Mês vigente: <strong>Julho/2026</strong></p>
+
+<div class="gd-kpi-principal">
+  <div class="gd-label">Recebido — Mês Vigente (Jul/2026)</div>
+  <div class="gd-value">R$ 46.746,92</div>
+  <div class="gd-sub">3 pagamentos &bull; 06/07, 13/07 e 20/07</div>
+</div>
+
+<div class="gd-kpi-row">
+  <div class="gd-kpi">
+    <div class="gd-label">Acumulado desde o início</div>
+    <div class="gd-value">R$ 339.784,07</div>
+    <div class="gd-sub">54 pagamentos &bull; Jul/25 → Jul/26</div>
+  </div>
+  <div class="gd-kpi gd-accent">
+    <div class="gd-label">Acumulado 2026</div>
+    <div class="gd-value">R$ 282.134,57</div>
+    <div class="gd-sub">30 pagamentos &bull; Jan → Jul/26</div>
+  </div>
+  <div class="gd-kpi gd-light">
+    <div class="gd-label">Acumulado Mar/26 em diante</div>
+    <div class="gd-value">R$ 222.357,01</div>
+    <div class="gd-sub">22 pagamentos &bull; Mar → Jul/26</div>
+  </div>
+</div>
+
+<div class="gd-section">
+  <div class="gd-section-title">Recebimentos Mensais</div>
+  <div class="gd-chart-outer">
+    <div class="gd-bars" id="chartBars"></div>
+  </div>
+</div>
+
+<div class="gd-section">
+  <div class="gd-section-title">Resumo Mensal</div>
+  <table>
+    <thead><tr><th>Mês/Ano</th><th class="gd-r">Total Recebido</th><th class="gd-r">1%</th></tr></thead>
+    <tbody id="tblMes"></tbody>
+  </table>
+</div>
+
+<div class="gd-section">
+  <div class="gd-section-title">Histórico de Lançamentos</div>
+  <table>
+    <thead><tr><th>Data</th><th class="gd-r">Valor</th></tr></thead>
+    <tbody id="tblHist"></tbody>
+  </table>
+</div>
+</div>
+<!-- fim #tab-galpao -->
 
 <script>
 /* =========================================================================
@@ -287,7 +395,10 @@ const MESES = [
       {dia:15, de:"Antonio Carlos Alves", valor:177.60},
       {dia:15, de:"Franciele Saraiva Soares", valor:872.00},
     ],
-    comissoes:[ {dia:14, de:"BioSul", valor:102.081} ],
+    comissoes:[
+      {dia:14, de:"BioSul", valor:102.081},
+      {dia:31, de:"GALP\u00c3O DROP", valor:467.47},
+    ],
     reembolsos:[],
   },
 ];
@@ -300,40 +411,45 @@ const sum = arr => arr.reduce((a,b)=>a+b.valor,0);
 const comValor = x => (x.valor!=null) ? x.valor : (x.faturamento||0)*COMISSAO_PCT;
 const sumCom = arr => arr.reduce((a,b)=>a+comValor(b),0);
 
-const data = MESES.map(m=>{
-  const recebido = sum(m.recebidos||[]);
-  const comissao = sumCom(m.comissoes||[]);
-  const reembolso = sum(m.reembolsos||[]);
-  const salario = (m.salario!=null)?m.salario:SALARIO_MENSAL;
-  const devido = salario + comissao + reembolso;
-  return {...m, recebido, comissao, reembolso, salario, devido, saldo: recebido-devido};
-});
+let data, T, maxAbs;
 
-const T = {
-  recebido: data.reduce((a,m)=>a+m.recebido,0),
-  devido:   data.reduce((a,m)=>a+m.devido,0),
-  salario:  data.reduce((a,m)=>a+m.salario,0),
-  comissao: data.reduce((a,m)=>a+m.comissao,0),
-  reembolso:data.reduce((a,m)=>a+m.reembolso,0),
-};
-T.saldo = T.recebido - T.devido;
-T.pctPago = T.devido ? (T.recebido/T.devido*100) : 0;
-T.mediaMes = data.length ? T.recebido/data.length : 0;
+function computeData(){
+  data = MESES.map(m=>{
+    const recebido = sum(m.recebidos||[]);
+    const comissao = sumCom(m.comissoes||[]);
+    const reembolso = sum(m.reembolsos||[]);
+    const salario = (m.salario!=null)?m.salario:SALARIO_MENSAL;
+    const devido = salario + comissao + reembolso;
+    return {...m, recebido, comissao, reembolso, salario, devido, saldo: recebido-devido};
+  });
+
+  T = {
+    recebido: data.reduce((a,m)=>a+m.recebido,0),
+    devido:   data.reduce((a,m)=>a+m.devido,0),
+    salario:  data.reduce((a,m)=>a+m.salario,0),
+    comissao: data.reduce((a,m)=>a+m.comissao,0),
+    reembolso:data.reduce((a,m)=>a+m.reembolso,0),
+  };
+  T.saldo = T.recebido - T.devido;
+  T.pctPago = T.devido ? (T.recebido/T.devido*100) : 0;
+  T.mediaMes = data.length ? T.recebido/data.length : 0;
+  maxAbs = Math.max(...data.map(m=>Math.abs(m.saldo)),1);
+}
 
 const cls = v => v>0.005?"pos":(v<-0.005?"neg":"zero");
 const abr = n => n.slice(0,3);
 
-/* period */
-document.getElementById("period").textContent =
-  data.length ? `${abr(data[0].nome)} a ${abr(data[data.length-1].nome)} 2026` : "";
+function renderAll(){
+  computeData();
 
-/* hero */
-document.getElementById("heroValue").textContent = money(T.saldo);
-document.getElementById("heroValue").style.color =
-  T.saldo>0.005?"var(--pos-hi)":(T.saldo<-0.005?"var(--neg-hi)":"#fff");
+  /* period */
+  document.getElementById("period").textContent =
+    data.length ? `${abr(data[0].nome)} a ${abr(data[data.length-1].nome)} 2026` : "";
 
-/* usado tambem pelo grafico de saldo abaixo */
-const maxAbs = Math.max(...data.map(m=>Math.abs(m.saldo)),1);
+  /* hero */
+  document.getElementById("heroValue").textContent = money(T.saldo);
+  document.getElementById("heroValue").style.color =
+    T.saldo>0.005?"var(--pos-hi)":(T.saldo<-0.005?"var(--neg-hi)":"#fff");
 
 /* kpis (clicaveis) */
 const kpiDefs = [
@@ -366,7 +482,7 @@ document.getElementById("comp").innerHTML = compData.map(([n,v,c])=>{
 
 /* saldo chart (SVG diverging bars around zero) */
 (function(){
-  const W=Math.max(320, data.length*96), H=210, padX=14, padTop=24, padBot=30;
+  const W=Math.max(320, data.length*96), H=210, padX=14, padTop=26, padBot=48;
   const zoneH=H-padTop-padBot, mid=padTop+zoneH/2;
   const bw=Math.min(46,(W-padX*2)/data.length*0.5);
   const step=(W-padX*2)/data.length;
@@ -403,6 +519,8 @@ document.getElementById("cards").innerHTML = data.map((m,i)=>{
     </div>
   </button>`;
 }).join("");
+document.querySelectorAll(".card").forEach(b=>b.onclick=()=>openMonth(+b.dataset.i));
+}
 
 /* modal */
 const overlay=document.getElementById("overlay"), sheet=document.getElementById("sheet");
@@ -503,7 +621,6 @@ function openList(tipo){
   document.getElementById("closeX").onclick=closeSheet;
 }
 function closeSheet(){overlay.classList.remove("open");document.body.style.overflow="";}
-document.querySelectorAll(".card").forEach(b=>b.onclick=()=>openMonth(+b.dataset.i));
 overlay.addEventListener("click",e=>{if(e.target===overlay)closeSheet();});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();});
 
@@ -511,6 +628,98 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();});
 document.getElementById("foot").innerHTML =
   `Saldo = recebido menos devido (sal\u00e1rio, comiss\u00e3o e reembolso).<br>`+
   `Negativo em vermelho, ainda falta receber. Positivo em verde, pagaram a mais. Atualizado em ${ATUALIZADO_EM}.`;
+
+/* ---- abas ---- */
+function showTab(name){
+  document.getElementById("tab-receb").classList.toggle("active", name==="receb");
+  document.getElementById("tab-galpao").classList.toggle("active", name==="galpao");
+  document.getElementById("tabBtnReceb").classList.toggle("active", name==="receb");
+  document.getElementById("tabBtnGalpao").classList.toggle("active", name==="galpao");
+  if(name!=="receb") closeSheet();
+}
+document.getElementById("tabBtnReceb").onclick=()=>showTab("receb");
+document.getElementById("tabBtnGalpao").onclick=()=>showTab("galpao");
+
+/* ---- inicialização ---- */
+renderAll();
+</script>
+
+<script>
+/* =========================================================================
+   P\u00e1gina 2 \u2014 Galp\u00e3o Drop. Isolado numa IIFE: nenhuma vari\u00e1vel daqui
+   vaza para o escopo global nem colide com o script da P\u00e1gina 1.
+   ========================================================================= */
+(function(){
+const pagamentos = [
+  ["22/07/2025",319.04],["23/07/2025",455.08],["30/07/2025",570.00],
+  ["05/08/2025",1206.90],["12/08/2025",358.92],["20/08/2025",814.00],["28/08/2025",591.12],
+  ["03/09/2025",812.82],["09/09/2025",1326.54],["16/09/2025",826.86],["25/09/2025",358.92],["30/09/2025",2310.68],
+  ["07/10/2025",2268.44],["15/10/2025",3671.20],["21/10/2025",2034.94],["30/10/2025",2383.24],
+  ["05/11/2025",4614.16],["10/11/2025",4417.64],["17/11/2025",4315.50],["26/11/2025",1941.98],
+  ["01/12/2025",3452.88],["08/12/2025",6955.54],["17/12/2025",4271.46],["22/12/2025",4121.88],["29/12/2025",3249.76],
+  ["05/01/2026",2600.34],["12/01/2026",4614.16],["20/01/2026",9377.28],["28/01/2026",11739.88],
+  ["02/02/2026",9357.66],["09/02/2026",12135.80],["18/02/2026",6578.52],["24/02/2026",3373.92],
+  ["02/03/2026",5668.12],["09/03/2026",8821.98],["16/03/2026",11971.14],["24/03/2026",6940.56],["31/03/2026",10036.52],
+  ["06/04/2026",5878.76],["13/04/2026",8667.80],["22/04/2026",11475.74],["28/04/2026",4929.38],
+  ["04/05/2026",8140.28],["11/05/2026",15410.42],["19/05/2026",11112.88],["27/05/2026",9408.28],
+  ["02/06/2026",11116.75],["08/06/2026",8748.74],["15/06/2026",20815.56],["24/06/2026",7283.18],["30/06/2026",9184.00],
+  ["06/07/2026",5740.78],["13/07/2026",19507.48],["20/07/2026",21498.66],
+];
+
+const MES_VIGENTE = "07/2026";
+const PERC_INICIO = [2026, 3];
+
+const fmt = v => 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+function mesKey(d) { const p = d.split('/'); return `${p[1]}/${p[2]}`; }
+function mesLabel(k) {
+  const M = {'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+  const [m,a] = k.split('/'); return M[m]+'/'+a.slice(2);
+}
+function temPerc(k) {
+  const [m,a] = k.split('/');
+  return parseInt(a) > PERC_INICIO[0] || (parseInt(a) === PERC_INICIO[0] && parseInt(m) >= PERC_INICIO[1]);
+}
+
+const grupos = {};
+pagamentos.forEach(([d,v]) => { const k = mesKey(d); grupos[k] = (grupos[k]||0)+v; });
+
+const mesesCron = Object.keys(grupos).sort((a,b) => {
+  const [ma,aa] = a.split('/'), [mb,ab] = b.split('/');
+  return (parseInt(aa)*100+parseInt(ma)) - (parseInt(ab)*100+parseInt(mb));
+});
+
+const tblMes = document.getElementById('tblMes');
+[...mesesCron].reverse().forEach(k => {
+  const v = grupos[k];
+  const isVig = k === MES_VIGENTE;
+  const tr = document.createElement('tr');
+  if (isVig) tr.classList.add('gd-highlight');
+  tr.innerHTML = `<td>${mesLabel(k)}${isVig?' <span class="gd-tag">vigente</span>':''}</td><td class="gd-val">${fmt(v)}</td><td class="gd-val">${temPerc(k)?fmt(v*0.01):'<span class="gd-dim">\u2014</span>'}</td>`;
+  tblMes.appendChild(tr);
+});
+
+const tblHist = document.getElementById('tblHist');
+[...pagamentos].reverse().forEach(([d,v]) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${d}</td><td class="gd-val">${fmt(v)}</td>`;
+  tblHist.appendChild(tr);
+});
+
+const maxVal = Math.max(...mesesCron.map(k => grupos[k]));
+const bars = document.getElementById('chartBars');
+mesesCron.forEach(k => {
+  const v = grupos[k];
+  const h = Math.max(3, (v/maxVal)*155);
+  const [m,a] = k.split('/');
+  const ai=parseInt(a), mi=parseInt(m);
+  let cor = k===MES_VIGENTE?'#111': ai===2026&&mi>=3?'#444': ai===2026?'#888':'#ccc';
+  const col = document.createElement('div');
+  col.className = 'gd-bar-col';
+  col.innerHTML = `<div class="gd-bar" style="height:${h}px;background:${cor}"><div class="gd-tooltip">${mesLabel(k)}: ${fmt(v)}</div></div><div class="gd-bar-label">${mesLabel(k)}</div>`;
+  bars.appendChild(col);
+});
+})();
 </script>
 </body>
 </html>
