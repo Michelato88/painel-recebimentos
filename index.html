@@ -424,6 +424,9 @@ function computeData(){
     return {...m, recebido, comissao, reembolso, salario, devido, saldo: recebido-devido};
   });
 
+  let acumulado = 0;
+  data.forEach(m=>{ acumulado += m.saldo; m.saldoAcumulado = acumulado; });
+
   T = {
     recebido: data.reduce((a,m)=>a+m.recebido,0),
     devido:   data.reduce((a,m)=>a+m.devido,0),
@@ -434,7 +437,7 @@ function computeData(){
   T.saldo = T.recebido - T.devido;
   T.pctPago = T.devido ? (T.recebido/T.devido*100) : 0;
   T.mediaMes = data.length ? T.recebido/data.length : 0;
-  maxAbs = Math.max(...data.map(m=>Math.abs(m.saldo)),1);
+  maxAbs = Math.max(...data.map(m=>Math.abs(m.saldoAcumulado)),1);
 }
 
 const cls = v => v>0.005?"pos":(v<-0.005?"neg":"zero");
@@ -491,18 +494,18 @@ document.getElementById("comp").innerHTML = compData.map(([n,v,c])=>{
   let bars="";
   data.forEach((m,i)=>{
     const cx=padX+step*i+step/2;
-    const val=scale(m.saldo);
-    const up=m.saldo>=0;
+    const val=scale(m.saldoAcumulado);
+    const up=m.saldoAcumulado>=0;
     const y=up?mid-val:mid;
     const h=Math.max(2,Math.abs(val));
     const color=up?"var(--pos-hi)":"var(--neg-hi)";
     bars+=`<rect x="${cx-bw/2}" y="${y}" width="${bw}" height="${h}" rx="4" fill="${color}"/>`;
     const lblY=up?y-7:y+h+15;
-    bars+=`<text x="${cx}" y="${lblY}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" font-weight="600" fill="${color}">${money(m.saldo).replace("R$\u00a0","").replace("R$","")}</text>`;
+    bars+=`<text x="${cx}" y="${lblY}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" font-weight="600" fill="${color}">${money(m.saldoAcumulado).replace("R$\u00a0","").replace("R$","")}</text>`;
     bars+=`<text x="${cx}" y="${H-9}" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-size="11" font-weight="600" fill="var(--hero-muted)">${abr(m.nome)}</text>`;
   });
   document.getElementById("chart").innerHTML=
-    `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Saldo por m\u00eas">
+    `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Saldo acumulado por m\u00eas">
        <line x1="${padX}" y1="${mid}" x2="${W-padX}" y2="${mid}" stroke="var(--hero-line)" stroke-width="1.5"/>
        ${bars}
      </svg>`;
