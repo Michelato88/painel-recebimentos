@@ -398,6 +398,7 @@ const MESES = [
     comissoes:[
       {dia:14, de:"BioSul", valor:102.081},
       {dia:31, de:"GALP\u00c3O DROP", valor:467.47},
+      {dia:27, de:"Pet Style PR", faturamento:6461.32},
     ],
     reembolsos:[],
   },
@@ -531,10 +532,7 @@ function openMonth(i){
   const recebidos=[...m.recebidos].sort((a,b)=>b.dia-a.dia);
   const devidos=[
     {de:"Mensal (fixo)", valor:m.salario},
-    ...m.comissoes.map(x=>({
-      de:"Comiss\u00e3o \u00b7 "+x.de, valor:comValor(x),
-      hint: x.faturamento!=null ? `1% de ${money(x.faturamento)}` : null
-    })),
+    ...m.comissoes.map(x=>({de:"Comiss\u00e3o \u00b7 "+x.de, valor:comValor(x)})),
     ...m.reembolsos.map(x=>({de:"Reembolso \u00b7 "+x.de, valor:x.valor})),
   ];
   sheet.innerHTML=`
@@ -599,9 +597,7 @@ function openList(tipo){
     title="Tudo que \u00e9 devido"; total=T.devido;
     dataDesc.forEach(m=>{
       let rows=lineRow("Mensal (fixo)", m.salario);
-      m.comissoes.forEach(x=> rows+=lineRow(
-        "Comiss\u00e3o \u00b7 "+x.de, comValor(x), "",
-        x.faturamento!=null ? `1% de ${money(x.faturamento)}` : null));
+      m.comissoes.forEach(x=> rows+=lineRow("Comiss\u00e3o \u00b7 "+x.de, comValor(x)));
       m.reembolsos.forEach(x=> rows+=lineRow("Reembolso \u00b7 "+x.de, x.valor));
       blocks.push(grpBlock(m.nome, m.devido, rows));
     });
